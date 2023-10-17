@@ -11,7 +11,7 @@ def consumer_demo(host,topic,groupid=None):
         print('消费消息：',data)
 
 if __name__ == "__main__":
-    host=['10.10.10.91:9092','10.10.10.92:9092','10.10.10.93:9092']
+    host=['localhost:9092']
     topic='jimmy_test'
     groupid='jimmy'      #消费者ID
     consumer_demo(host,topic,groupid)
