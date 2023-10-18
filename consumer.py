@@ -6,6 +6,7 @@ import json
 #消费消息
 def consumer_demo(host,topic,groupid=None):
     consumer = KafkaConsumer(topic,group_id=groupid,bootstrap_servers=host)
+    print('consumer服务已启动！')
     for message in consumer:
         data=json.loads(message.value.decode())
         print('消费消息：',data)
