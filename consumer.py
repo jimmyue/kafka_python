@@ -6,18 +6,18 @@ from kafka.errors import kafka_errors
 
 # CREATE TABLE `test_jimmy_kafka_data` (
 #   `id` bigint NOT NULL AUTO_INCREMENT,
-#   `topic` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-#   `partition_nb` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL,
-#   `offset` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL,
-#   `groupid` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL,
-#   `req_data` longtext COLLATE utf8mb4_bin,
-#   `cdate` datetime DEFAULT CURRENT_TIMESTAMP,
+#   `topic` varchar(50) NOT NULL COMMENT '主题',
+#   `partitions` varchar(50) DEFAULT NULL COMMENT '分区',
+#   `offset` varchar(50) DEFAULT NULL COMMENT '偏移量',
+#   `groupid` varchar(50) DEFAULT NULL COMMENT '消费者id',
+#   `req_data` longtext COMMENT '消息数据',
+#   `cdate` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '消费时间',
 #   PRIMARY KEY (`id`)
 # ) 
 
 #消费消息
 def consumer_demo(host,topic,groupid=None):
-    consumer = KafkaConsumer(topic
+    consumer = KafkaConsumer(topic    #主题
         ,bootstrap_servers=host       #kafka服务host
         ,group_id=groupid             #消费者ID
         ,auto_offset_reset='earliest' #从上一次未消费的位置开始读
@@ -30,7 +30,7 @@ def consumer_demo(host,topic,groupid=None):
         data=json.loads(message.value.decode())
         result=[topic,str(message.partition),str(message.offset),groupid,str(data)]
         print (" 消费消息：%s/%d/%d：value=%s" % (message.topic,message.partition,message.offset,data))
-        sql="insert into test_jimmy_kafka_data(topic,partition_nb,offset,groupid,req_data) values(%s,%s,%s,%s,%s)"
+        sql="insert into test_jimmy_kafka_data(topic,partitions,offset,groupid,req_data) values(%s,%s,%s,%s,%s)"
         cur.execute(sql,result)
         db.commit()
         consumer.commit()
