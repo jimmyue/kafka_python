@@ -23,6 +23,7 @@ def consumer_demo(host,topic,groupid=None):
         ,group_id=groupid             #消费者ID
         ,auto_offset_reset='earliest' #从上一次未消费的位置开始读
         ,enable_auto_commit=False     #消费完数据后手动commit，一条一条获取
+        ,value_deserializer=lambda m: json.loads(m.decode('utf-8')) #消费json格式消息
         )
     print('kafka消费服务已启动！')
     if consumer.partitions_for_topic(topic):
@@ -31,22 +32,22 @@ def consumer_demo(host,topic,groupid=None):
         toff = consumer.end_offsets(partitions)
         toff = [(key.partition, toff[key]) for key in toff.keys()]
         toff.sort()
-        print("{}所有offset: {}".format(topic,str(toff)))
         # current
         coff = [(x.partition, consumer.committed(x)) for x in partitions]
         coff.sort()
-        print("{}当前offset: {}".format(topic,str(coff)))
         # cal sum and left
         toff_sum = sum([x[1] for x in toff])
         cur_sum = sum([x[1] for x in coff if x[1] is not None])
         left_sum = toff_sum - cur_sum
+        print("{}所有offset: {}".format(topic,toff_sum))
+        print("{}当前offset: {}".format(topic,cur_sum))
         print("{}剩余未消费: {}".format(topic,left_sum))
     #消费数据，插入数据库
-    db=pymysql.connect(host='xxxx',port=3306,user='xx',passwd='xx',db='xx',charset='utf8')
+    db=pymysql.connect(host='10.10.22.172',port=3306,user='lexususer',passwd='Lexus.1234#',db='ways_lexus',charset='utf8')
     cur = db.cursor()
     for message in consumer:
-        key=json.loads(message.key.decode())
-        value=json.loads(message.value.decode())
+        key=message.key.decode()
+        value=message.value
         result=['2',topic,str(message.partition),str(message.offset),groupid,str(key),str(value)]
         print ("\n消费消息：%s/%d/%d key=%s value=%s" % (message.topic,message.partition,message.offset,key,value))
         sql="insert into test_jimmy_kafka_data(datatype,topic,partitions,offset,groupid,req_key,req_value) values(%s,%s,%s,%s,%s,%s,%s)"
